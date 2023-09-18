@@ -8,7 +8,7 @@ setup(
     description="Perform various types of recalibrations in mass spectrometry.",
     long_description="Perform various types of recalibrations in mass spectrometry (if only: `ceil` is the limit)",
     author="Matteo Lacki & David Teschner",
-    author_email="matteo.lacki@gmail.com dateschn@uni-mainz.de",
+    author_email="matteo.lacki@gmail.com",
     url="https://github.com/MatteoLacki/recapuccino.git",
     keywords=[
         "M/Z recalibration",
