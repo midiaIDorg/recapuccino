@@ -1,4 +1,6 @@
 # This Python file uses the following encoding: utf-8
+import glob
+
 from setuptools import find_packages, setup
 
 setup(
@@ -33,10 +35,15 @@ setup(
         "Programming Language :: Python :: 3.12",
     ],
     install_requires=[
+        "duckdb",  # importing data with SQLs
         "numpy",
         "numba",
         "pandas",
+        "pandas_ops",  # some custom shit around pandas
+        "patsy",
         "matplotlib",
         "sklearn",
+        "seaborn",  # just for plotting: might make it optional later on
     ],
+    scripts=glob.glob("tools/*.py"),
 )
