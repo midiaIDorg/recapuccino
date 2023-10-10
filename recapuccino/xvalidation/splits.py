@@ -4,6 +4,7 @@ import typing
 import pandas as pd
 from math import inf
 
+
 class Model(typing.Protocol):
     def fit(X, y, *args, **kwargs):
         ...
@@ -29,11 +30,14 @@ def create_group_assignments_at_random(
 # (X[AABB], Y[AABB]), (X[CC], Y[CC])
 # A[0] .. A[99]
 
+
 def iterate_train_evaluation_datasets(
     X: pd.DataFrame,
     Y: pd.Series,
     assignments: npt.NDArray,
-) -> typing.Iterator[tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, npt.NDArray]]:
+) -> typing.Iterator[
+    tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, npt.NDArray]
+]:
     for chunk_No in range(max(assignments)):
         evaluation_set_mask = assignments == chunk_No
         yield (
@@ -52,9 +56,11 @@ def find_optimal_models_using_xvalidation(
     X: pd.DataFrame,
     Y: pd.Series,
     chunks_cnt: int,
-    ModelFactory_hyperparameters_tuples: list[tuple[typing.Callable[..., Model], dict[str, typing.Any]]],
-    scoring: typing.Callable = lambda x,y: np.abs(x-y).median(),
-    _replace = True,
+    ModelFactory_hyperparameters_tuples: list[
+        tuple[typing.Callable[..., Model], dict[str, typing.Any]]
+    ],
+    scoring: typing.Callable = lambda x, y: np.abs(x - y).median(),
+    _replace=True,
     **kwargs
 ) -> list[tuple[Model, float]]:
     """
@@ -67,20 +73,30 @@ def find_optimal_models_using_xvalidation(
     """
     assert len(X) == len(Y), "X has dim N0*D and Y has dim N1 and N0 != N1."
     assert chunks_cnt <= len(X), "There are groups than data rows. WTF."
-    assert chunks_cnt = len(ModelFactory_hyperparameters_tuples)
+    assert chunks_cnt == len(ModelFactory_hyperparameters_tuples)
 
     group_assignment_probabilities = np.ones(chunks_cnt, dtype=float) / chunks_cnt
     group_assignment_probabilities /= sum(group_assignment_probabilities)
 
-    assignments_of_data_points_to_individual_chunks = create_group_assignments_at_random(
-        number_of_elements_to_assign_groups_to = len(X),
-        group_assignment_probabilities = group_assignment_probabilities,
-        replace = _replace,
+    assignments_of_data_points_to_individual_chunks = (
+        create_group_assignments_at_random(
+            number_of_elements_to_assign_groups_to=len(X),
+            group_assignment_probabilities=group_assignment_probabilities,
+            replace=_replace,
+        )
     )
 
     optimal_predictions = np.zeros(len(Y), dtype=Y.values.dtype)
     best_model_and_score_per_chunk = []
-    for train_X, train_Y, eval_X, eval_Y, chunk_mask in iterate_train_evaluation_datasets(X, Y, assignments_of_data_points_to_individual_chunks):
+    for (
+        train_X,
+        train_Y,
+        eval_X,
+        eval_Y,
+        chunk_mask,
+    ) in iterate_train_evaluation_datasets(
+        X, Y, assignments_of_data_points_to_individual_chunks
+    ):
         best_predictions_per_chunk = None
         best_model = None
         best_score = inf
@@ -101,9 +117,6 @@ def find_optimal_models_using_xvalidation(
 
     return best_model_and_score_per_chunk
 
+
 # from sklearn.linear_model import LinearRegression
 # ModelFactory = LinearRegression
-
-
-
-
