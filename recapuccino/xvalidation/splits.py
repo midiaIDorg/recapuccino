@@ -84,6 +84,8 @@ def find_optimal_models_using_xvalidation(
             replace=_replace,
         )
     )
+    N = len(ModelFactory_hyperparameters_tuples)
+    split_probs_in_chunk = np.ones(N, dtype=float) / N
 
     optimal_predictions = np.zeros(len(Y), dtype=Y.values.dtype)
     best_model_and_score_per_chunk = []
@@ -96,20 +98,42 @@ def find_optimal_models_using_xvalidation(
     ) in iterate_train_evaluation_datasets(
         X, Y, assignments_of_data_points_to_individual_chunks
     ):
-        best_predictions_per_chunk = None
+        assignments_of_data_points_within_a_chunk = create_group_assignments_at_random(
+            number_of_elements_to_assign_groups_to=len(train_X),
+            group_assignment_probabilities=split_probs_in_chunk,
+            replace=_replace,
+        )
+
         best_model = None
         best_score = inf
-        for ModelFactory, hyperparameters in ModelFactory_hyperparameters_tuples:
+
+        for (ModelFactory, hyperparameters), (
+            hyper_train_X,
+            hyper_train_Y,
+            hyper_eval_X,
+            hyper_eval_Y,
+            hyper_chunk_mask,
+        ) in zip(
+            ModelFactory_hyperparameters_tuples,
+            iterate_train_evaluation_datasets(
+                train_X,
+                train_Y,
+                assignments_of_data_points_within_a_chunk,
+            ),
+        ):
             model = ModelFactory(**hyperparameters)
-            model.fit(train_X, train_Y)
-            pred_Y = model.predict(eval_X)
-            score = scoring(pred_Y, eval_Y)
+            model.fit(hyper_train_X, hyper_train_Y)
+            hyper_pred_Y = model.predict(hyper_eval_X)
+            score = scoring(hyper_pred_Y, hyper_eval_Y)
             if score < best_score:
-                best_predictions_per_chunk = pred_Y
                 best_model = model
                 best_score = score
-        optimal_predictions[chunk_mask] = best_predictions_per_chunk
-        best_model_and_score_per_chunk.append((best_model, best_score))
+
+        pred_Y = best_model.predict(eval_X)
+        best_model_score = scoring(pred_Y, eval_Y)
+        best_model_and_score_per_chunk.append((best_model, best_model_score))
+
+        optimal_predictions[chunk_mask] = pred_Y
 
     for _, score in best_model_and_score_per_chunk:
         assert score < inf, "We fucked up: the scores were all infinite."
