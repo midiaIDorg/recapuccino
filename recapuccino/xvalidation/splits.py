@@ -38,7 +38,7 @@ def iterate_train_evaluation_datasets(
 ) -> typing.Iterator[
     tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, npt.NDArray]
 ]:
-    for chunk_No in range(max(assignments)):
+    for chunk_No in range(max(assignments) + 1):
         evaluation_set_mask = assignments == chunk_No
         yield (
             X.loc[~evaluation_set_mask],
@@ -73,7 +73,6 @@ def find_optimal_models_using_xvalidation(
     """
     assert len(X) == len(Y), "X has dim N0*D and Y has dim N1 and N0 != N1."
     assert chunks_cnt <= len(X), "There are groups than data rows. WTF."
-    assert chunks_cnt == len(ModelFactory_hyperparameters_tuples)
 
     group_assignment_probabilities = np.ones(chunks_cnt, dtype=float) / chunks_cnt
     group_assignment_probabilities /= sum(group_assignment_probabilities)
@@ -115,7 +114,7 @@ def find_optimal_models_using_xvalidation(
     for _, score in best_model_and_score_per_chunk:
         assert score < inf, "We fucked up: the scores were all infinite."
 
-    return best_model_and_score_per_chunk
+    return best_model_and_score_per_chunk, optimal_predictions
 
 
 # from sklearn.linear_model import LinearRegression
