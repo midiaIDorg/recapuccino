@@ -42,7 +42,7 @@ setup(
         "pandas_ops",  # some custom shit around pandas
         "patsy",
         "matplotlib",
-        "sklearn",
+        "scikit-learn",
         "seaborn",  # just for plotting: might make it optional later on
     ],
     scripts=glob.glob("tools/*.py"),
