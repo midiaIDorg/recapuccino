@@ -1,16 +1,10 @@
-import numpy as np
-import numpy.typing as npt
 import typing
-import pandas as pd
 from math import inf
 
-
-class Model(typing.Protocol):
-    def fit(X, y, *args, **kwargs):
-        ...
-
-    def predict(X):
-        ...
+import numpy as np
+import numpy.typing as npt
+import pandas as pd
+from recapuccino.models.prototype import Model
 
 
 def create_group_assignments_at_random(
@@ -62,7 +56,7 @@ def find_optimal_models_using_xvalidation(
     scoring: typing.Callable = lambda x, y: np.abs(x - y).median(),
     _replace=True,
     **kwargs
-) -> list[tuple[Model, float]]:
+) -> tuple[list[tuple[Model, float]], npt.NDArray]:
     """
     Find k optimal models for each x-validation data chunk.
 
