@@ -44,6 +44,7 @@ setup(
         "matplotlib",
         "scikit-learn",
         "seaborn",  # just for plotting: might make it optional later on
+        "tensorflow",
     ],
     scripts=glob.glob("tools/*.py"),
 )
