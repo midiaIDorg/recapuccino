@@ -85,3 +85,14 @@ def plot_moving_medians_and_two_interpolactions(
     plt.plot(mz_grid, f1(mz_grid), color="red")
     if show:
         plt.show()
+
+
+class OldMovingMedians:
+    def __init__(self):
+        pass
+
+    def fit(X: pd.DataFrame, y: pd.Series, *args, **kwargs):
+        pass
+
+    def predict(X):
+        pass
