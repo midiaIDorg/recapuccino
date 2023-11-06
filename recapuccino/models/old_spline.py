@@ -1,3 +1,4 @@
+import functools
 import typing
 
 import matplotlib
@@ -87,12 +88,37 @@ def plot_moving_medians_and_two_interpolactions(
         plt.show()
 
 
-class OldMovingMedians:
-    def __init__(self):
-        pass
+class OldSpline:
+    def __init__(
+        self,
+        min_mz_grid=0,
+        max_mz_grid=10_000,
+        kernel_size_obs: int = 101,
+        kernel_size_mz_grid: int = 101,  # there were as many Dalmatines
+        f0_kwargs: dict = {"kind": "linear", "bounds_error": False, "fill_value": 0},
+        f1_kwargs: dict = {"kind": "linear", "bounds_error": False, "fill_value": 0},
+        **kwargs,
+    ):
+        self.fitter = functools.partial(
+            correct_delta_mzs_using_moving_medians_and_two_interpolations,
+            f1_mz_grid=np.arange(0, 10_000),
+            kernel_size_obs=kernel_size_obs,
+            kernel_size_mz_grid=kernel_size_mz_grid,
+            f0_kwargs=f0_kwargs,
+            f1_kwargs=f1_kwargs,
+        )
 
-    def fit(X: pd.DataFrame, y: pd.Series, *args, **kwargs):
-        pass
+    def fit(self, X: pd.DataFrame, y: pd.Series, *args, **kwargs):
+        assert X.shape[1] == 1
+        data = pd.DataFrame(dict(mz=X.iloc[:, 0].to_numpy(), diff_mz_ppm=y.to_numpy()))
+        sorted_deduplicated_data = (
+            data.groupby("mz").diff_mz_ppm.first().to_frame().reset_index()
+        )
+        self.foo = self.fitter(
+            observed_mz=sorted_deduplicated_data.mz,
+            delta_mz=sorted_deduplicated_data.diff_mz_ppm,
+        )
 
-    def predict(X):
-        pass
+    def predict(self, X: pd.DataFrame) -> npt.NDArray:
+        assert X.shape[1] == 1
+        return self.foo(X.iloc[:, 0].to_numpy())
