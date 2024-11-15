@@ -10,15 +10,11 @@ import pandas as pd
 import tomllib
 from pandas_ops.io import read_df, save_df
 from recapuccino.importing import dynamically_import_foo
+from recapuccino.ppmcalcs import calculate_mz_calibrated, calculate_ppm_deltas
 from recapuccino.xvalidation.splits import (
     create_group_assignments_at_random,
     find_optimal_models_using_xvalidation,
 )
-
-
-def save_figure(path, dpi=100, **kwargs) -> None:
-    plt.savefig(path, dpi=dpi, **kwargs)
-    plt.close()
 
 
 def assert_config_fields_present(config, *fields):
@@ -44,9 +40,9 @@ refine_nodes_config_entries = [
 @click.argument("uncalibrated_precursor_stats", type=Path)
 @click.argument("uncalibrated_fragment_stats", type=Path)
 @click.argument("config", type=Path)
-@click.argument("refined_precursor_stats", type=Path)
-@click.argument("refined_fragment_stats", type=Path)
-@click.argument("mz_recalibrated_distributions", type=Path)
+@click.argument("out_refined_precursor_stats", type=Path)
+@click.argument("out_refined_fragment_stats", type=Path)
+@click.argument("out_mz_recalibrated_distributions", type=Path)
 @click.option("--quality_check_folder", type=Path, default=None)
 @click.option("--verbose", is_flag=True)
 def refine_nodes(
@@ -55,9 +51,9 @@ def refine_nodes(
     uncalibrated_precursor_stats: Path,
     uncalibrated_fragment_stats: Path,
     config: Path,
-    refined_precursor_stats: Path,
-    refined_fragment_stats: Path,
-    mz_recalibrated_distributions: Path,
+    out_refined_precursor_stats: Path,
+    out_refined_fragment_stats: Path,
+    out_mz_recalibrated_distributions: Path,
     quality_check_folder: Path | None = None,
     verbose: bool = False,
 ) -> None:
@@ -69,9 +65,9 @@ def refine_nodes(
         uncalibrated_precursor_stats (Path): Path to MS1 clusters' statistics.
         uncalibrated_fragment_stats (Path): Path to MS2 clusters' statistics.
         config (Path): Path to the config file (.toml).
-        refined_precursor_stats (Path): Path to where to save the recalibated MS1 stats.
-        refined_fragment_stats (Path): Path to where to save the recalibated MS2 stats.
-        mz_recalibrated_distributions (Path): Path to where to save the recalibated m/z distributions (perhaps for the purpose of choosing new precursor and fragment search boxes?).
+        out_refined_precursor_stats (Path): Path to where to save the recalibated MS1 stats.
+        out_refined_fragment_stats (Path): Path to where to save the recalibated MS2 stats.
+        out_mz_recalibrated_distributions (Path): Path to where to save the recalibated m/z distributions (perhaps for the purpose of choosing new precursor and fragment search boxes?).
         quality_check_folder (Path): Path to where to save the quality plots for MS1 and MS2 m/z recalibration.
         verbose: bool = False
     """
@@ -82,6 +78,10 @@ def refine_nodes(
         config = tomllib.load(fh)
 
     assert_config_fields_present(config, *refine_nodes_config_entries)
+
+    def save_figure(path, dpi=100, **kwargs) -> None:
+        plt.savefig(path, dpi=dpi, **kwargs)
+        plt.close()
 
     try:
         save_figure = partial(save_figure, dpi=config["plot_settings"]["dpi"])
@@ -212,7 +212,7 @@ def refine_nodes(
     if verbose:
         print("Saving recalibated ms1.")
 
-    save_df(ms1, refined_precursor_stats)
+    save_df(ms1, out_refined_precursor_stats)
 
     if verbose:
         print("Reading fragments.")
@@ -289,7 +289,7 @@ def refine_nodes(
         predicted_ppm_diffs=predicted_fragment_ppm_diffs,
         X_new=X_fragment_new,
     )
-    save_df(ms2, refined_fragment_stats)
+    save_df(ms2, out_refined_fragment_stats)
 
     recalibrated_fragment_mz = ms2["mz_wmean"][sage_found_ms2_ids].to_numpy()
     theory_fragment_mz = frag_mz_theo
@@ -351,6 +351,6 @@ def refine_nodes(
 
     save_df(
         recalibrated_mz_distributions,
-        mz_recalibrated_distributions,
+        out_mz_recalibrated_distributions,
     )
     # OK, need to add in stats for quantiles: likely on the ppm level, cause to be used with SAGE.
