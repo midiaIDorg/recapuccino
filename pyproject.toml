@@ -13,6 +13,7 @@ authors=[
     {name="Michał Piotr Startek",email="michalsta@mimuw.edu.pl"},
 ]
 dependencies = [
+    "click",
     "duckdb",  # importing data with SQLs
     "numpy",
     "numba",
@@ -32,7 +33,7 @@ keywords = [
 dev = ["tensorflow", "seaborn"]
 
 [project.scripts]
-node_recalibration = "recapuccino.cli.node_recalibration:node_recalibration"
+node_recalibration = "recapuccino.cli.node_recalibration:refine_nodes"
 
 [project.urls]
 homepage="https://github.com/midiaIDorg/recapuccino.git"
