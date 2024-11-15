@@ -26,4 +26,4 @@ def refine_nodes(
     quality_check_folder: Path,
     verbose: bool = False,
 ) -> None:
-    pass
+    print(1)

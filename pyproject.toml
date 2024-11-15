@@ -33,7 +33,7 @@ keywords = [
 dev = ["tensorflow", "seaborn"]
 
 [project.scripts]
-node_recalibration = "recapuccino.cli.node_recalibration:refine_nodes"
+refine_nodes = "recapuccino.tools.node_recalibration:refine_nodes"
 
 [project.urls]
 homepage="https://github.com/midiaIDorg/recapuccino.git"
