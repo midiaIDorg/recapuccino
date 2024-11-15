@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools >= 64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="recapuccino"
+version="0.0.2"
+description="Perform various types of recalibrations in mass spectrometry."
+readme="README.md"
+authors=[
+    {name="Mateusz Krzysztof Łącki",email="matteo.lacki@gmail.com"},
+    {name="David Teschner",email="dateschn@uni-mainz.de"},
+    {name="Michał Piotr Startek",email="michalsta@mimuw.edu.pl"},
+]
+dependencies = [
+    "duckdb",  # importing data with SQLs
+    "numpy",
+    "numba",
+    "pandas",
+    "pandas_ops",  # some custom shit around pandas
+    "patsy",
+    "matplotlib",
+    "scikit-learn",
+]
+keywords = [
+    "M/Z recalibration",
+    "Mass spectrometry recalibrations.",
+    "State of the art rescoring without proof or mathematical thinking.",
+]
+
+[project.optional-dependencies]
+dev = ["tensorflow", "seaborn"]
+
+[project.scripts]
+node_recalibration = "recapuccino.cli.node_recalibration:node_recalibration"
+
+[project.urls]
+homepage="https://github.com/midiaIDorg/recapuccino.git"
+repository="https://github.com/midiaIDorg/recapuccino.git"
+
+[tool.uv]
+reinstall-package = ["recapuccino"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
